@@ -1,4 +1,7 @@
 # DSH-Minesweeper
+[![Release](https://img.shields.io/github/v/release/snanjib/DSH-minesweeper?style=flat-square)](https://github.com/snanjib/DSH-minesweeper/releases)
+[![License](https://img.shields.io/github/license/snanjib/DSH-minesweeper?style=flat-square)](https://github.com/snanjib/DSH-minesweeper/blob/main/LICENSE)
+[![Stars](https://img.shields.io/github/stars/snanjib/DSH-minesweeper?style=flat-square)](https://github.com/snanjib/DSH-minesweeper/stargazers)
 
 在等待 agent 执行任务时可随时玩的经典扫雷小游戏，挂载在 DeepSeek Harness 框架级浮层 `shell.overlay`。
 
