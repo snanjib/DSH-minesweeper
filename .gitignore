@@ -1,0 +1,18 @@
+# 原始大图（仅本地保留，压缩后的 webp 才入库）
+assets/*.png
+
+# 依赖与构建产物
+node_modules/
+dist/
+build/
+*.log
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 系统
+.DS_Store
+Thumbs.db
