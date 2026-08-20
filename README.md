@@ -1,8 +1,11 @@
 # DSH-Minesweeper
+[![Release](https://img.shields.io/github/v/release/snanjib/DSH-minesweeper?style=flat-square)](https://github.com/snanjib/DSH-minesweeper/releases)
+[![License](https://img.shields.io/github/license/snanjib/DSH-minesweeper?style=flat-square)](https://github.com/snanjib/DSH-minesweeper/blob/main/LICENSE)
+[![Stars](https://img.shields.io/github/stars/snanjib/DSH-minesweeper?style=flat-square)](https://github.com/snanjib/DSH-minesweeper/stargazers)
 
 在等待 agent 执行任务时可随时玩的经典扫雷小游戏，挂载在 DeepSeek Harness 框架级浮层 `shell.overlay`。
 
-[演示视频](assets/dsh-minesweeper-demo.mp4)
+https://github.com/user-attachments/assets/5d6039f0-f149-48a1-9c5d-f60cff23e36c
 
 ## 功能
 
@@ -119,12 +122,6 @@ DSH-minesweeper/
 ├── LICENSE
 └── README.md
 ```
-
-## 未来计划
-
-- 「随机选」按钮：随机选一个（文案「那我随便选了啊……」），由用户主动触发；约束求解器用作「优先从最小对等组随机」的候选来源。
-- 「安全格」按钮：用求解器推出一个确定安全的格子（文案「这里不是雷」），推不出时提示。
-- 待接入模型能力或更强的推理算法后，「随机选」升级为带推理的「帮我选」，文案换回「让我好好想想……」这类思考文案。
 
 ## License
 
