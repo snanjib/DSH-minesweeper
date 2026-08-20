@@ -30,33 +30,41 @@
 
 本仓库是一个标准 DSH 树外插件（bundle）包：`dsh.bundle` 声明了 patch 层，`dsh.client` 声明了浏览器半区。
 
-前置：DSH 的 CLI（`dsh` 命令）。若你从源码运行 DSH，在 checkout 根目录用 `pnpm dsh` 代替 `dsh`。
+### 前置
 
-**一条命令装到 profile（默认 `web`）：**
+- [Node.js](https://nodejs.org)（≥18）
+- [pnpm](https://pnpm.io) —— `dsh plugin` 内部用 pnpm 装依赖，需在 `PATH` 上
+- 能运行 DSH：推荐 `npx @deepseek-ai/dsh web`（首次会自动拉取包）；若你从源码运行 DSH，则用 checkout 里的 `pnpm dsh web`
+
+### 安装本插件
+
+**npm 用户**（DSH 通过 `npx @deepseek-ai/dsh` 运行）：
 
 ```bash
-dsh plugin --profile web add <本仓库路径或 git URL>
+npx @deepseek-ai/dsh plugin --profile web add github:snanjib/DSH-minesweeper
 ```
+
+**源码用户**（在 DSH checkout 根目录运行）：
+
+```bash
+pnpm dsh plugin --profile web add github:snanjib/DSH-minesweeper
+```
+
+> 也可用本地路径：把 `github:...` 换成本仓库的本地目录。
 
 这一步会自动完成三件事：pnpm 链接依赖 → 把本包加入 profile 的 bundle 列表 → 应用本包的 `cordis.patch.yml`（插入 `minesweeper` 行）。
 
-然后让它生效：
+> 本仓库已提交构建产物 `lib/client.js`，且没有 `prepare` 构建脚本，从 git 安装无需任何额外许可或构建，装完即用。
+
+然后让插件生效：
 
 - **Web GUI**：重启 DSH（插件表与 bundle 层在进程启动时读取）。
 - **CLI / 无头**：新开一个会话即生效。
 
-### 从 GitHub 安装
-
-```bash
-dsh plugin --profile web add github:snanjib/DSH-minesweeper
-```
-
-> 本仓库已提交构建产物 `lib/client.js`，git 依赖无需任何构建即可直接使用。
-
 ### 卸载
 
 ```bash
-dsh plugin --profile web remove dsh-minesweeper
+npx @deepseek-ai/dsh plugin --profile web remove dsh-minesweeper
 ```
 
 ## 开发与构建
