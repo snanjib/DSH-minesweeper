@@ -1,0 +1,4 @@
+# DSH-Minesweeper bundle patch：向组合树插入本插件的行。
+- insert:
+    - id: minesweeper
+      name: dsh-minesweeper

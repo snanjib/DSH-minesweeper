@@ -2,10 +2,9 @@
 const fs = require('node:fs')
 
 let src = fs.readFileSync('client.js', 'utf8')
-const marker = "return {\n  inject: ['timer'],"
-const idx = src.lastIndexOf(marker)
-if (idx < 0) { console.error('marker not found'); process.exit(1) }
-src = src.slice(0, idx) + 'return { __t: { solveBoard, findGuess, findSafe, sigOf, makeCells, analyzeComponent } }\n'
+const m = /return \{\r?\n  inject: \['timer'\],/.exec(src)
+if (!m) { console.error('marker not found'); process.exit(1) }
+src = src.slice(0, m.index) + 'return { __t: { solveBoard, findGuess, findSafe, sigOf, makeCells, analyzeComponent } }\n'
 const T = new Function(src)().__t
 
 function mk(rows, cols) {

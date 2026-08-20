@@ -1,23 +1,24 @@
 # DSH-Minesweeper
 
-在等待 agent 执行任务时可随时玩的经典扫雷小游戏，挂载在框架级浮层 `shell.overlay`。
+在等待 agent 执行任务时可随时玩的经典扫雷小游戏，挂载在 DeepSeek Harness 框架级浮层 `shell.overlay`。
 
 [演示视频](assets/dsh-minesweeper-demo.mp4)
 
 ## 功能
 
 **扫雷本体**
-- 三种难度：初级 9×9（10 雷）、中级 16×16（40 雷）、高级 16×30（99 雷），并支持自定义难度
+- 三种预设难度：初级 9×9（10 雷）、中级 16×16（40 雷）、高级 16×30（99 雷），并支持自定义难度（行 / 列 / 雷）
 - 首次点击安全（雷不会出现在第一格及其周围 8 格）
-- 自由键位绑定：翻开 / 标记三循环 / 快速翻开（chord）可任意绑定到鼠标键、双击或键盘键，在设置面板（⚙️）中配置
+- 自由键位绑定：翻开 / 标记三循环（旗→问号→无）/ 快速翻开（chord）可任意绑定到鼠标键、双击或键盘键，在设置面板（⚙️）中配置
 - 剩余雷数、计时器、😊/😵/😎 状态脸、重新开始
-- 窗口可拖动，不遮挡对话
+- 窗口可拖动、可自适应左右展开气泡，不遮挡对话
 
 **鲸鱼娘帮选**
 - 按钮区常驻两个按钮：
-  - **随机选**：鲸鱼娘「那我随便选了啊……」→ 800ms 后「就这个！」，红圈标出随机选中的一格（优先从最小对等组中随机，没有对等组时从全部未知格随机）
-  - **安全格**：完备约束求解器（规则传播 + 回溯枚举）推出一个确定安全的格子，「这里不是雷」；推不出时提示「推不出安全格」
+  - **随机选**：鲸鱼娘「那我随便选了啊……」→ 800ms 后「就这个！」，红圈标出随机选中的一格（优先从最小对等组随机，没有对等组时从全部未知格随机）
+  - **安全格**：完备约束求解器（规则传播 + 回溯枚举）推出一个确定安全的格子，提示「这里不是雷」；推不出时提示「推不出安全格」
 - 按你的选择给出反应：
+
   | 情形 | 鲸鱼娘 |
   |---|---|
   | 听劝 + 安全 / 通关 | 怎么样，信我没错吧～ 😎 / 漂亮，收工！🎉 |
@@ -25,69 +26,98 @@
   | 不听 + 炸了 | 谁让你不听我的 😏 |
   | 不听 + 安全 | 哼，算你走运～ |
 
+## 安装
+
+本仓库是一个标准 DSH 树外插件（bundle）包：`dsh.bundle` 声明了 patch 层，`dsh.client` 声明了浏览器半区。
+
+前置：DSH 的 CLI（`dsh` 命令）。若你从源码运行 DSH，在 checkout 根目录用 `pnpm dsh` 代替 `dsh`。
+
+**一条命令装到 profile（默认 `web`）：**
+
+```bash
+dsh plugin --profile web add <本仓库路径或 git URL>
+```
+
+这一步会自动完成三件事：pnpm 链接依赖 → 把本包加入 profile 的 bundle 列表 → 应用本包的 `cordis.patch.yml`（插入 `minesweeper` 行）。
+
+然后让它生效：
+
+- **Web GUI**：重启 DSH（插件表与 bundle 层在进程启动时读取）。
+- **CLI / 无头**：新开一个会话即生效。
+
+### 从 GitHub 安装
+
+```bash
+dsh plugin --profile web add github:snanjib/DSH-minesweeper
+```
+
+> 本仓库已提交构建产物 `lib/client.js`，git 依赖无需任何构建即可直接使用。
+
+### 卸载
+
+```bash
+dsh plugin --profile web remove dsh-minesweeper
+```
+
+## 开发与构建
+
+构建产物（`client.js`、`lib/client.js`）已提交，**直接安装无需构建**。仅当你修改了 `client.template.js` 或图片后才需要重建：
+
+```bash
+npm run build      # 等价于 node build.mjs
+```
+
+构建只需 Node.js（≥18），无其他依赖。它会：
+
+1. 把 `assets/web/*.webp` 内嵌为 base64 → 生成 `client.js`
+2. 把 `client.js` 包装成 `lib/client.js`（浏览器 bundle）
+
+迭代流程：改 `client.template.js` → `npm run build` → 强刷页面（Ctrl+F5）。无需重新安装、无需发版。
+
+### 更换鲸鱼娘图片
+
+仓库只含压缩后的 `assets/web/*.webp`；原始 PNG 是本地资产（被 `.gitignore` 忽略，不随仓库分发）。若你换了图，先用 ImageMagick 压成 128px WebP（透明背景、裁边、清理残影）：
+
+```bash
+magick assets/whale-think.png -alpha set -channel A -threshold 6% +channel -fuzz 3% -trim +repage -resize "128x128>" -background none -gravity center -extent 128x128 assets/web/whale-think.webp
+# 四张（think / happy / sorry / smug）同理，然后：
+npm run build
+```
+
 ## 实现说明
 
-- **纯客户端**动态 Cordis 插件，无 Host 半区。
-- `client.js` 即 `cordis_define` 的 `code.client` 函数体（返回 Cordis Plugin，已内嵌 base64 图片，自包含）。
-- 挂载点：`shell.overlay`，`id: minesweeper`，`order: 1000`。
-- 依赖：`timer` 服务（计时/动画定时）、`styles` 内置（样式）、`slots` 服务（挂载）。
-- 所有副作用（计时器、样式、slot 注册）均归属 Plugin Fiber，停止/更新时自动清理。
-- 鲸鱼娘表情图片由 AI 生成，压缩为 128px WebP 后内嵌在 `client.js` 中。
+- 纯客户端插件：node 半区是空 `apply`（`lib/index.js`），浏览器半区经 `exports["./client"]`（`lib/client.js`）出货，`dsh.client` 声明 `platform: web`。
+- 挂载点：`shell.overlay`（框架级浮层），`id: minesweeper`，`order: 1000`。
+- 依赖：`timer` 服务（计时/动画定时）、`slots` 服务（挂载）；样式用插件自带的 `<style data-plugin>` 标签注入，随插件卸载自动清理。
+- 鲸鱼娘表情图片由 AI 生成，压缩为 128px WebP 后内嵌，离线可用、无需外部资源。
 
 ## 目录结构
 
 ```
-dsh-minesweeper/
-├── client.js            # 最终插件源码（内嵌图片，提交给 cordis_define）
+DSH-minesweeper/
+├── package.json         # dsh.bundle + dsh.client 声明、exports、build 脚本
+├── cordis.patch.yml     # bundle patch 层（insert minesweeper 行）
 ├── client.template.js   # 可读源码模板（图片用 @@WHALE_*@@ 占位）
-├── build.ps1            # 由模板 + 图片生成 client.js
+├── client.js            # 构建产物（base64 内嵌）
+├── build.mjs            # 跨平台构建脚本
+├── lib/
+│   ├── index.js         # node 半区（空 apply）
+│   └── client.js        # 浏览器 bundle（构建产物）
 ├── assets/
-│   ├── web/             # 压缩后的 128px WebP（入库）
-│   └── *.png            # 原始大图（被 .gitignore 忽略，仅本地保留）
+│   ├── web/*.webp       # 压缩图（入库）
+│   ├── dsh-minesweeper-demo.mp4   # 演示视频
+│   └── *.png            # 原始大图（本地资产，.gitignore 忽略）
+├── test-solver.cjs      # 帮选求解器回归测试
+├── LICENSE
 └── README.md
 ```
 
-## 永久化安装（profile 常驻）
+## 未来计划
 
-本仓库同时是一个标准 DSH 树外插件包（`dsh-minesweeper`）：
+- 「随机选」按钮：随机选一个（文案「那我随便选了啊……」），由用户主动触发；约束求解器用作「优先从最小对等组随机」的候选来源。
+- 「安全格」按钮：用求解器推出一个确定安全的格子（文案「这里不是雷」），推不出时提示。
+- 待接入模型能力或更强的推理算法后，「随机选」升级为带推理的「帮我选」，文案换回「让我好好想想……」这类思考文案。
 
-```
-package.json        # 声明 dsh.client（web 平台）、exports["./client"]
-lib/index.js        # node 半区（空 apply）
-lib/client.js       # 浏览器 bundle（由 build-bundle.mjs 生成）
-```
+## License
 
-安装进 profile（一次即可，pnpm link 依赖，改动即时反映在下次页面加载）：
-
-```powershell
-# 在 DSH checkout 目录下运行，<插件路径> 替换为本仓库的本地路径
-pnpm dsh plugin --profile web add <插件路径>
-```
-
-然后在 `$DSH_HOME/profiles/web/cordis.patch.yml` 追加行（该层热重载、重启保留）：
-
-```yaml
-- insert:
-    - id: minesweeper
-      name: dsh-minesweeper
-```
-
-### 迭代流程
-
-改 `client.template.js` → `.\build.ps1`（重新内嵌 base64 + 重新生成 lib/client.js）→ 刷新页面（必要时 Ctrl+F5）。无需重新安装、无需发版。
-
-## 重新生成 client.js
-
-原始大图（`assets/*.png`）仅在本地，压缩图 `assets/web/*.webp` 已入库。改图后重新压缩并重跑 build：
-
-```powershell
-# 1. 把新 png 缩到 128px webp（透明背景、裁边、清理残影）
-magick assets\whale-think.png -alpha set -channel A -threshold 6% +channel -fuzz 3% -trim +repage -resize "128x128>" -background none -gravity center -extent 128x128 assets\web\whale-think.webp
-# 2. 重新内嵌 base64
-.\build.ps1
-```
-
-## 激活方式（开发流程）
-
-1. 将 `client.js` 内容作为 `code.client` 传入 `cordis_define`（`pluginId: mines-1`，生成新 package）。
-2. 用返回的 `packageId` 执行 `cordis_run`（`update` 模式切换版本）。
+[MIT](LICENSE)
