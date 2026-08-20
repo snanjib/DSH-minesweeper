@@ -2,7 +2,7 @@
 
 在等待 agent 执行任务时可随时玩的经典扫雷小游戏，挂载在 DeepSeek Harness 框架级浮层 `shell.overlay`。
 
-[演示视频](assets/dsh-minesweeper-demo.mp4)
+https://github.com/user-attachments/assets/5d6039f0-f149-48a1-9c5d-f60cff23e36c
 
 ## 功能
 
